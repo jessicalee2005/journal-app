@@ -64,7 +64,7 @@ function AddEntry() {
 
   return (
     <div className="add-entry">
-      <h1>Add Entry</h1>
+      <h1 className="add-title">Add Entry</h1>
       <button
         className={`mic-button ${isRecording ? "recording" : ""}`}
         style={{ transform: `scale(${1 + volume / 200})` }}
@@ -74,7 +74,6 @@ function AddEntry() {
       </button>
       {audioUrl && (
         <div className="audio-preview">
-          <h2>Recorded Audio:</h2>
           <audio controls src={audioUrl}></audio>
         </div>
       )}
