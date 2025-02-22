@@ -1,0 +1,54 @@
+.add-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 20px;
+}
+
+.mic-button:hover {
+  background-color: #173d2c;
+}
+
+.mic-button:active {
+  transform: scale(0.9);
+}
+
+.mic-icon {
+  width: 50px;
+  height: 50px;
+}
+
+.mic-button {
+  width: 90px;
+  height: 90px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: #467e65;
+  cursor: pointer;
+  box-shadow: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.1s ease;
+}
+
+.mic-button.recording {
+  background: red;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+}
+
+.mic-button img {
+  width: 60%;
+  height: 60%;
+}
+
+.audio-preview {
+  text-align: center;
+}
+
+audio {
+  width: 300px;
+}

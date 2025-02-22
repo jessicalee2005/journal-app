@@ -75,8 +75,8 @@
   align-items: center;
   gap: none;
   margin-bottom: 20px;
-  margin-left: 250px;
-  margin-right: 250px;
+  margin-left: 100px;
+  margin-right: 100px;
 }
 
 .month-navigation button {
@@ -87,7 +87,7 @@
 }
 
 .month-navigation img {
-  width: 30px; /* Adjust size as needed */
+  width: 30px;
   height: 30px;
   object-fit: contain;
 }
