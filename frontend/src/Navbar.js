@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
+import logo from "../src/assets/logo.png";
 
 function Navbar() {
   return (
     <nav className="navbar">
       <Link to="/" className="logo">
+        {/* <img src={logo} alt="Logo" className="logo-img" /> */}
         FeelSync
       </Link>
       <ul className="nav-links">

@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import "./AddEntry.css";
 import mic from "../assets/mic.png";
+import chicken from "../assets/chicken.png"; // Your chicken image path
 
 function AddEntry() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
+  const [textOutput, setTextOutput] = useState("");
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const animationRef = useRef(null);
@@ -49,6 +51,9 @@ function AddEntry() {
       const url = URL.createObjectURL(audioBlob);
       setAudioUrl(url);
       audioChunksRef.current = [];
+
+      // After recording, set some text in the text box (example output)
+      setTextOutput("This is the recorded text output.");
     };
 
     mediaRecorder.start();
@@ -64,7 +69,11 @@ function AddEntry() {
 
   return (
     <div className="add-entry">
-      <h1 className="add-title">Add Entry</h1>
+      <div className="chicken-container">
+        <img src={chicken} alt="Chicken" className="chicken-image" />
+        {audioUrl && <div className="text-output-box">{textOutput}</div>}
+      </div>
+
       <button
         className={`mic-button ${isRecording ? "recording" : ""}`}
         style={{ transform: `scale(${1 + volume / 200})` }}
@@ -72,11 +81,6 @@ function AddEntry() {
       >
         <img src={mic} alt="Microphone" />
       </button>
-      {audioUrl && (
-        <div className="audio-preview">
-          <audio controls src={audioUrl}></audio>
-        </div>
-      )}
     </div>
   );
 }
