@@ -11,10 +11,10 @@ function Navbar() {
           <Link to="/">Home</Link>
         </li>
         <li>
-          <Link to="/analytics">Analytics</Link>
+          <Link to="/add-entry">Add Entry</Link>
         </li>
         <li>
-          <Link to="/add-entry">Add Entry</Link>
+          <Link to="/analytics">Analytics</Link>
         </li>
       </ul>
     </nav>

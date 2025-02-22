@@ -1,8 +1,12 @@
+import mic from "../assets/mic.png";
+
 function AddEntry() {
   return (
-    <div>
-      <h1>Add Entry Page</h1>
-      <p>Create a new entry from this page.</p>
+    <div className="add-entry-page">
+      <h1>talk to me!</h1>
+      <button className="mic-button">
+        <img src={mic} alt="Microphone" className="mic-icon" />
+      </button>
     </div>
   );
 }
