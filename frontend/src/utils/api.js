@@ -1,4 +1,5 @@
 import axios from "axios";
+import {diaryEntries} from "./diaryEntries";
 
 // API base URL (adjust according to your setup)
 const API_URL = "http://localhost:4001";
@@ -25,6 +26,7 @@ export const analyzeMood = async (userInput) => {
   }
 };
 
+
 // Save the diary entry to localStorage
 export const saveDiaryEntry = (date, diaryEntry) => {
   try {
@@ -36,54 +38,55 @@ export const saveDiaryEntry = (date, diaryEntry) => {
   }
 };
 
-// Fetch diary entry for a specific date from localStorage
+
+export const analyzeSleepAndHealth = async (messages) => {
+  try {
+    const response = await axios.post(`${API_URL}/analyze-sleep-health`, { messages });
+    return response.data; // { sleepTime: number|null, physicalHealth: "good"|"mid"|"bad"|null }
+  } catch (error) {
+    console.error("Error analyzing sleep and health:", error);
+    return { sleepTime: null, physicalHealth: null };
+  }
+};
+
 // export const getDiaryEntryForDate = (date) => {
 //   try {
-//     const entry = JSON.parse(localStorage.getItem(date) || '{}');
-//     return Object.keys(entry).length > 0 ? entry : null;
+//     // Retrieve the entry for the given date from localStorage
+//     const entry = localStorage.getItem(date);
+
+//     // If the key doesn't exist or is empty, return null
+//     if (!entry) {
+//       console.log("No diary entry found for this date.");
+//       return null;
+//     }
+
+//     // Parse the entry data
+//     const parsedEntry = JSON.parse(entry);
+
+//     // Return only the "diary" field, or null if it's not present
+//     return parsedEntry;
+
 //   } catch (error) {
 //     console.error("Error fetching diary entry for date:", error);
 //     return null;
 //   }
 // };
-export const getDiaryEntryForDate = (date) => {
-  try {
-    // Retrieve the entry for the given date from localStorage
-    const entry = localStorage.getItem(date);
-
-    // If the key doesn't exist or is empty, return null
-    if (!entry) {
-      console.log("No diary entry found for this date.");
-      return null;
-    }
-
-    // Parse the entry data
-    const parsedEntry = JSON.parse(entry);
-
-    // Return only the "diary" field, or null if it's not present
-    return parsedEntry;
-
-  } catch (error) {
-    console.error("Error fetching diary entry for date:", error);
-    return null;
-  }
-};
 // Fetch all diary entries from localStorage
-export const fetchDiaryEntries = () => {
-  try {
-    const entries = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.match(/^\d{4}-\d{2}-\d{2}$/)) { // Check if key is a date
-        entries[key] = JSON.parse(localStorage.getItem(key));
-      }
-    }
-    return entries;
-  } catch (error) {
-    console.error("Error fetching all diary entries:", error);
-    return {};
-  }
-};
+// export const fetchDiaryEntries = () => {
+//   try {
+//     const entries = {};
+//     for (let i = 0; i < localStorage.length; i++) {
+//       const key = localStorage.key(i);
+//       if (key.match(/^\d{4}-\d{2}-\d{2}$/)) { // Check if key is a date
+//         entries[key] = JSON.parse(localStorage.getItem(key));
+//       }
+//     }
+//     return entries;
+//   } catch (error) {
+//     console.error("Error fetching all diary entries:", error);
+//     return {};
+//   }
+// };
 
 export const transcribeAudio = async (audioUrl) => {
   try {
@@ -92,5 +95,30 @@ export const transcribeAudio = async (audioUrl) => {
   } catch (error) {
     console.error("Error transcribing audio:", error);
     throw error;
+  }
+};
+
+
+
+export const getDiaryEntryForDate = (date) => {
+  try {
+    const entry = diaryEntries[date];
+    if (!entry) {
+      console.log("No diary entry found for this date.");
+      return null;
+    }
+    return entry;
+  } catch (error) {
+    console.error("Error fetching diary entry for date:", error);
+    return null;
+  }
+};
+
+export const fetchDiaryEntries = () => {
+  try {
+    return diaryEntries;
+  } catch (error) {
+    console.error("Error fetching all diary entries:", error);
+    return {};
   }
 };

@@ -9,6 +9,7 @@ import {
   saveDiaryEntry,
   getDiaryEntryForDate,
   transcribeAudio,
+  analyzeSleepAndHealth
 } from "../utils/api";
 
 function AddEntry() {
@@ -118,20 +119,21 @@ function AddEntry() {
         text: "Extract sleep time and physical health information from our conversation",
       },
     ]);
-    const { sleepTime, physicalHealth } = parseAnalysis(analysisText);
+    const { sleepTime, physicalHealth } = await analyzeSleepAndHealth(conversation);
 
     const entryData = {
       conversation,
       diary: diaryText,
       mood,
-      sleepTime,
-      physicalHealth,
+      sleepTime: sleepTime === null ? null : parseFloat(sleepTime), // Ensure it's a number or null
+      physicalHealth, // "good", "mid", "bad", or null
     };
     console.log(entryData);
 
     saveDiaryEntry(getTodayKey(), entryData);
     setConversation([]);
     setAudioUrl(null);
+    setStarted(false);
   };
 
   const convertAudioToText = async (audioBlob) => {
@@ -181,7 +183,7 @@ function AddEntry() {
             waitingForResponse
               ? "Thinking..."
               : started
-              ? conversation[conversation.length - 1].text.slice(5)
+              ? conversation[conversation.length - 1].text.slice(4)
               : "Press the mic to speak to me!"
           )
       ),

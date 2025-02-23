@@ -87,11 +87,13 @@ function Home() {
       let randomImage = gray; // Random image selection
 
       let date_key = `${year}-${month}-${day}`;
+      console.log(day)
       if (month + 1 < 10) {
-        if (day + 1 < 10) {
+        if (day < 10) {
           date_key = `${year}-0${month + 1}-0${day}`;
+        } else {
+          date_key = `${year}-0${month + 1}-${day}`;
         }
-        date_key = `${year}-0${month + 1}-${day}`;
       }
 
       console.log(date_key);
@@ -103,6 +105,7 @@ function Home() {
         randomImage = mood_images[entries?.mood] || gray;
         diary = entries?.diary || null;
       }
+      console.log(entries)
 
       days.push(
         <button
@@ -142,7 +145,7 @@ function Home() {
         <div className="modal">
           <div className="modal-content">
             <h2>
-              {monthNames[currentDate.getMonth()]} {selectedDay},{" "}
+              {monthNames[currentDate.getMonth()+1]} {selectedDay},{" "}
               {currentDate.getFullYear()}
             </h2>
             <p>{currEntry || "No description available."}</p>

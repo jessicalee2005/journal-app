@@ -53,30 +53,90 @@ app.post("/chat", async (req, res) => {
   }
 });
 
+// app.post("/analyze-mood", async (req, res) => {
+//   try {
+//     const { userInput } = req.body;
+
+//     const response = await axios.post(
+//       "https://api.openai.com/v1/chat/completions",
+//       {
+//         model: "gpt-3.5-turbo",
+//         messages: [
+//           {
+//             role: "system",
+//             content:
+//               "You are an expert mood analyst. Based on the user's text, classify their mood as: Happy, Sad, Angry, Excited, Anxious, or Neutral. Consider their tone, words, and context. ONLY RETURN ONE WORD (Happy, Sad, Angry, Excited, Anxious, or Neutral)"
+//           },
+//           { role: "user", content: userInput },
+//         ],
+//       },
+//       { headers: { Authorization: `Bearer ${OPENAI_API_KEY}` } }
+//     );
+
+//     res.json({ mood: response.data.choices[0].message.content.trim() });
+//   } catch (error) {
+//     console.error("Mood analysis error:", error.response?.data || error.message);
+//     res.status(500).json({ error: "Failed to analyze mood" });
+//   }
+// });
+
 app.post("/analyze-mood", async (req, res) => {
   try {
     const { userInput } = req.body;
+
+    if (!userInput) {
+      return res.status(400).json({ error: "User input is required" });
+    }
+
+    const prompt = `
+      You are an expert mood analyst. Based on the following text, classify the overall mood of the entire conversation as one of: Happy, Sad, Angry, Excited, Anxious, or Neutral. Consider the tone, words, and context of the whole input. Return only a single mood value (e.g., "Sad") without any additional labels like "User 1" or "User 2".
+      Here is the text to analyze:\n\n${userInput}
+    `;
 
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
         model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an expert mood analyst. Based on the user's text, classify their mood as: Happy, Sad, Angry, Excited, Anxious, or Neutral. Consider their tone, words, and context."
-          },
-          { role: "user", content: userInput },
-        ],
+        messages: [{ role: "user", content: prompt }],
       },
-      { headers: { Authorization: `Bearer ${OPENAI_API_KEY}` } }
+      { headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" } }
     );
 
-    res.json({ mood: response.data.choices[0].message.content.trim() });
+    const mood = response.data.choices[0].message.content.trim();
+    res.json({ mood });
   } catch (error) {
     console.error("Mood analysis error:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to analyze mood" });
+  }
+});
+
+app.post("/analyze-sleep-health", async (req, res) => {
+  try {
+    const { messages } = req.body;
+
+    const prompt = `
+      Analyze the following conversation to extract sleep time and physical health:
+      - For sleep time, identify the number of hours slept (e.g., "I slept 8 hours" → 8). Return a number or null if not found.
+      - For physical health, classify it as "good", "mid", or "bad" based on the user's description (e.g., "feeling great" → "good", "feeling okay" → "mid", "feeling sick" → "bad"). Return the string or null if not found.
+      - Focus only on user messages (sender: "user").
+      Here is the conversation:\n\n${messages.map((m) => `${m.sender}: ${m.text}`).join("\n")}
+      \nReturn the result in JSON format: { "sleepTime": number|null, "physicalHealth": "good"|"mid"|"bad"|null }
+    `;
+
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }],
+      },
+      { headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" } }
+    );
+
+    const result = JSON.parse(response.data.choices[0].message.content.trim());
+    res.json(result);
+  } catch (error) {
+    console.error("Error in analyze-sleep-health:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to analyze sleep and health" });
   }
 });
 
