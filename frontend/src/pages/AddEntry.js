@@ -1,23 +1,34 @@
 import { useState, useRef, useEffect } from "react";
+import React from "react";
 import "./AddEntry.css";
 import mic from "../assets/mic.png";
-import chicken from "../assets/chicken.png"; // Your chicken image path
+import chicken from "../assets/chicken.png";
+import { sendMessageToChatbot, analyzeMood, saveDiaryEntry, getDiaryEntryForDate, transcribeAudio } from '../utils/api';
+
 
 function AddEntry() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
-  const [textOutput, setTextOutput] = useState("");
+  const [conversation, setConversation] = useState([]);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const animationRef = useRef(null);
-
   const [volume, setVolume] = useState(0);
 
   useEffect(() => {
+    const today = getTodayKey();
+    const existingEntry = getDiaryEntryForDate(today);
+    if (existingEntry && existingEntry.conversation) {
+      setConversation(existingEntry.conversation);
+    }
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
   }, []);
+
+  const getTodayKey = () => {
+    return new Date().toISOString().split('T')[0];
+  };
 
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -35,8 +46,7 @@ function AddEntry() {
 
     const animate = () => {
       analyser.getByteFrequencyData(dataArray);
-      const average =
-        dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
+      const average = dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
       setVolume(average);
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -45,19 +55,25 @@ function AddEntry() {
     mediaRecorder.ondataavailable = (event) => {
       audioChunksRef.current.push(event.data);
     };
-
-    mediaRecorder.onstop = () => {
-      const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-      const url = URL.createObjectURL(audioBlob);
-      setAudioUrl(url);
-      audioChunksRef.current = [];
-
-      // After recording, set some text in the text box (example output)
-      setTextOutput("This is the recorded text output.");
-    };
+    mediaRecorder.onstop = handleRecordingStop;
 
     mediaRecorder.start();
     setIsRecording(true);
+  };
+
+  const handleRecordingStop = async () => {
+    const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+    const url = URL.createObjectURL(audioBlob);
+    setAudioUrl(url);
+
+    // Upload audio and transcribe with AssemblyAI
+    const userText = await convertAudioToText(audioBlob);
+    const updatedConversation = [...conversation, { sender: "user", text: userText }];
+    const chatResponse = await sendMessageToChatbot(updatedConversation);
+    console.log(chatResponse);
+    const newConversation = [...updatedConversation, { sender: "bot", text: chatResponse }];
+    setConversation(newConversation);
+    audioChunksRef.current = [];
   };
 
   const stopRecording = () => {
@@ -67,22 +83,254 @@ function AddEntry() {
     setVolume(0);
   };
 
-  return (
-    <div className="add-entry">
-      <div className="chicken-container">
-        <img src={chicken} alt="Chicken" className="chicken-image" />
-        {audioUrl && <div className="text-output-box">{textOutput}</div>}
-      </div>
+  const finishEntry = async () => {
+    const diaryText = await sendMessageToChatbot([
+      ...conversation,
+      { sender: "user", text: "Please generate a diary entry based on our conversation" }
+    ]);
+    const mood = await analyzeMood(conversation.map(m => m.text).join("\n"));
+    const analysisText = await sendMessageToChatbot([
+      ...conversation,
+      { sender: "user", text: "Extract sleep time and physical health information from our conversation" }
+    ]);
+    const { sleepTime, physicalHealth } = parseAnalysis(analysisText);
 
-      <button
-        className={`mic-button ${isRecording ? "recording" : ""}`}
-        style={{ transform: `scale(${1 + volume / 200})` }}
-        onClick={isRecording ? stopRecording : startRecording}
-      >
-        <img src={mic} alt="Microphone" />
-      </button>
-    </div>
+    const entryData = {
+      conversation,
+      diary: diaryText,
+      mood,
+      sleepTime,
+      physicalHealth
+    };
+    console.log(entryData);
+
+    saveDiaryEntry(getTodayKey(), entryData);
+    setConversation([]);
+    setAudioUrl(null);
+  };
+
+  const convertAudioToText = async (audioBlob) => {
+    // Upload audio to backend and get a URL
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "recording.wav");
+    const uploadResponse = await fetch("http://localhost:4001/upload-audio", {
+      method: "POST",
+      body: formData,
+    });
+    const { audioUrl } = await uploadResponse.json();
+    console.log(audioUrl); 
+
+    // Transcribe using AssemblyAI
+    const transcribedText = await transcribeAudio(audioUrl);
+    console.log(transcribedText);
+    return transcribedText;
+  };
+
+  const parseAnalysis = (text) => {
+    const sleepMatch = text.match(/sleep time:?\s*(\d+\.?\d*)/i);
+    const healthMatch = text.match(/physical health:?\s*([^\n]+)/i);
+    return {
+      sleepTime: sleepMatch ? parseFloat(sleepMatch[1]) : null,
+      physicalHealth: healthMatch ? healthMatch[1].trim() : null
+    };
+  };
+
+  return React.createElement(
+    "div",
+    { className: "add-entry" },
+    React.createElement(
+      "div",
+      { className: "chicken-container" },
+      React.createElement("img", {
+        src: chicken,
+        alt: "Chicken",
+        className: "chicken-image"
+      }),
+      audioUrl && React.createElement(
+        "div",
+        { className: "text-output-box" },
+        conversation.length > 0 
+          ? conversation[conversation.length - 1].text 
+          : "Start recording to see your conversation"
+      )
+    ),
+    React.createElement(
+      "button",
+      {
+        className: `mic-button ${isRecording ? "recording" : ""}`,
+        style: { transform: `scale(${1 + volume / 200})` },
+        onClick: isRecording ? stopRecording : startRecording
+      },
+      React.createElement("img", { src: mic, alt: "Microphone" })
+    ),
+    conversation.length > 0 && React.createElement(
+      "button",
+      { onClick: finishEntry },
+      "Finish Entry"
+    )
   );
 }
 
 export default AddEntry;
+
+// function AddEntry() {
+//   const [isRecording, setIsRecording] = useState(false);
+//   const [audioUrl, setAudioUrl] = useState(null);
+//   const [conversation, setConversation] = useState([]);
+//   const mediaRecorderRef = useRef(null);
+//   const audioChunksRef = useRef([]);
+//   const animationRef = useRef(null);
+//   const [volume, setVolume] = useState(0);
+
+//   useEffect(() => {
+//     // Load existing conversation for today on mount
+//     const today = getTodayKey();
+//     const existingEntry = getDiaryEntryForDate(today);
+//     if (existingEntry && existingEntry.conversation) {
+//       setConversation(existingEntry.conversation);
+//     }
+
+//     return () => {
+//       if (animationRef.current) cancelAnimationFrame(animationRef.current);
+//     };
+//   }, []);
+
+//   const getTodayKey = () => {
+//     return new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+//   };
+
+//   const startRecording = async () => {
+//     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+//     const mediaRecorder = new MediaRecorder(stream);
+//     mediaRecorderRef.current = mediaRecorder;
+
+//     const audioContext = new AudioContext();
+//     const source = audioContext.createMediaStreamSource(stream);
+//     const analyser = audioContext.createAnalyser();
+//     source.connect(analyser);
+//     analyser.fftSize = 256;
+
+//     const bufferLength = analyser.frequencyBinCount;
+//     const dataArray = new Uint8Array(bufferLength);
+
+//     const animate = () => {
+//       analyser.getByteFrequencyData(dataArray);
+//       const average = dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
+//       setVolume(average);
+//       animationRef.current = requestAnimationFrame(animate);
+//     };
+//     animate();
+
+//     mediaRecorder.ondataavailable = (event) => {
+//       audioChunksRef.current.push(event.data);
+//     };
+
+//     mediaRecorder.onstop = handleRecordingStop;
+
+//     mediaRecorder.start();
+//     setIsRecording(true);
+//   };
+
+//   const handleRecordingStop = async () => {
+//     const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+//     const url = URL.createObjectURL(audioBlob);
+//     setAudioUrl(url);
+
+//     const userText = await convertAudioToText(audioBlob);
+//     const updatedConversation = [...conversation, { sender: "user", text: userText }];
+
+//     const chatResponse = await sendMessageToChatbot(updatedConversation);
+//     const newConversation = [...updatedConversation, { sender: "bot", text: chatResponse }];
+//     setConversation(newConversation);
+//     audioChunksRef.current = [];
+//   };
+
+//   const stopRecording = () => {
+//     mediaRecorderRef.current.stop();
+//     setIsRecording(false);
+//     cancelAnimationFrame(animationRef.current);
+//     setVolume(0);
+//   };
+
+//   const finishEntry = async () => {
+//     // Generate diary
+//     const diaryText = await sendMessageToChatbot([
+//       ...conversation,
+//       { sender: "user", text: "Please generate a diary entry based on our conversation" }
+//     ]);
+
+//     // Analyze mood
+//     const mood = await analyzeMood(conversation.map(m => m.text).join("\n"));
+
+//     // Extract sleep time and physical health
+//     const analysisText = await sendMessageToChatbot([
+//       ...conversation,
+//       { sender: "user", text: "Extract sleep time and physical health information from our conversation" }
+//     ]);
+//     const { sleepTime, physicalHealth } = parseAnalysis(analysisText);
+
+//     const entryData = {
+//       conversation,
+//       diary: diaryText,
+//       mood,
+//       sleepTime,
+//       physicalHealth
+//     };
+
+//     saveDiaryEntry(getTodayKey(), entryData);
+//     setConversation([]);
+//     setAudioUrl(null);
+//   };
+
+//   const convertAudioToText = async (audioBlob) => {
+//     // Placeholder - implement with your speech-to-text API
+//     return "User audio input"; // Replace with actual speech-to-text implementation
+//   };
+
+//   const parseAnalysis = (text) => {
+//     const sleepMatch = text.match(/sleep time:?\s*(\d+\.?\d*)/i);
+//     const healthMatch = text.match(/physical health:?\s*([^\n]+)/i);
+    
+//     return {
+//       sleepTime: sleepMatch ? parseFloat(sleepMatch[1]) : null,
+//       physicalHealth: healthMatch ? healthMatch[1].trim() : null
+//     };
+//   };
+
+//   return React.createElement(
+//     "div",
+//     { className: "add-entry" },
+//     React.createElement(
+//       "div",
+//       { className: "chicken-container" },
+//       React.createElement("img", {
+//         src: chicken,
+//         alt: "Chicken",
+//         className: "chicken-image"
+//       }),
+//       audioUrl && React.createElement(
+//         "div",
+//         { className: "text-output-box" },
+//         conversation.length > 0 
+//           ? conversation[conversation.length - 1].text 
+//           : "Start recording to see your conversation"
+//       )
+//     ),
+//     React.createElement(
+//       "button",
+//       {
+//         className: `mic-button ${isRecording ? "recording" : ""}`,
+//         style: { transform: `scale(${1 + volume / 200})` },
+//         onClick: isRecording ? stopRecording : startRecording
+//       },
+//       React.createElement("img", { src: mic, alt: "Microphone" })
+//     ),
+//     conversation.length > 0 && React.createElement(
+//       "button",
+//       { onClick: finishEntry },
+//       "Finish Entry"
+//     )
+//   );
+// }
+
+// export default AddEntry;
