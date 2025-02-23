@@ -2,12 +2,11 @@ import { useState } from "react";
 import "./Home.css";
 import left from "../assets/left.png";
 import right from "../assets/right.png";
+import sad from "../assets/sad.jpg";
+import happy from "../assets/happy.jpeg";
+import mid from "../assets/mid.jpg";
 
-const images = [
-  "../assets/sad.jpg",
-  "../assets/happy.jpeg",
-  "../assets/mid.jpg",
-];
+const images = [sad, happy, mid];
 
 const monthNames = [
   "January",
@@ -26,6 +25,16 @@ const monthNames = [
 
 function Home() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(null); // Store selected day
+  const [modalOpen, setModalOpen] = useState(false); // Manage modal visibility
+
+  // Descriptions for each day (just an example, you can customize)
+  const descriptions = {
+    1: "Description for day 1",
+    2: "Description for day 2",
+    3: "Description for day 3",
+    // Add descriptions for each day
+  };
 
   const handlePrevMonth = () => {
     setCurrentDate(
@@ -42,6 +51,11 @@ function Home() {
   const getDaysInMonth = (year, month) =>
     new Date(year, month + 1, 0).getDate();
 
+  const handleDayClick = (day) => {
+    setSelectedDay(day); // Set the selected day
+    setModalOpen(true); // Open the modal
+  };
+
   const renderDaysGrid = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -51,16 +65,22 @@ function Home() {
     const days = [];
 
     for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<div key={`empty-${i}`} className="day empty"></div>);
+      days.push(<div key={`empty-${i}`} className="day empty"></div>); // Fix key generation
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
       const randomImage = images[Math.floor(Math.random() * images.length)]; // Random image selection
 
       days.push(
-        <div key={day} className="day">
-          <img src={randomImage} alt={`Day ${day}`} className="day-image" />
-        </div>
+        <button
+          key={day}
+          className="day"
+          onClick={() => handleDayClick(day)} // Make each day clickable
+        >
+          <img src={randomImage} alt={`Day ${day}`} className="day-image" />{" "}
+          {/* Fix alt syntax */}
+          <div className="day-number">{day}</div>
+        </button>
       );
     }
 
@@ -82,6 +102,25 @@ function Home() {
       </div>
 
       <div className="calendar-grid">{renderDaysGrid()}</div>
+
+      {/* Modal Popup */}
+      {modalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h2>
+              {monthNames[currentDate.getMonth()]} {selectedDay},{" "}
+              {currentDate.getFullYear()}
+            </h2>
+            <p>{descriptions[selectedDay] || "No description available."}</p>
+            <button
+              className="modal-button"
+              onClick={() => setModalOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

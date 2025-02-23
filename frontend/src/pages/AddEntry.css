@@ -24,7 +24,7 @@
   border: 1px solid #ccc;
   width: 200px;
   background-color: #f0f0f0;
-  margin-left: 10px;
+  margin-left: -60px;
 }
 
 .mic-button {
@@ -39,6 +39,7 @@
   justify-content: center;
   align-items: center;
   transition: transform 0.1s ease;
+  margin-right: 60px;
 }
 
 .mic-button.recording {
