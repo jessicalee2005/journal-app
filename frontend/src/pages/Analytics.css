@@ -1,0 +1,48 @@
+@import url("https://fonts.googleapis.com/css2?family=Alata&display=swap");
+
+.analytics-container {
+  padding: 20px;
+}
+
+.charts-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.chart-container {
+  width: 45%;
+  height: 300px;
+  margin: 20px;
+  font-family: alata;
+  font-size: 12px;
+  font-weight: 100;
+}
+
+.calendar-container {
+  width: 45%;
+}
+
+.title {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-family: Alata;
+  margin-left: px;
+  margin-top: 50px;
+}
+
+.green {
+  background-color: green;
+}
+
+.red {
+  background-color: red;
+}
+
+.yellow {
+  background-color: yellow;
+}
+
+.gray {
+  background-color: white;
+}
