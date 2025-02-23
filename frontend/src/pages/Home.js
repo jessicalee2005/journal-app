@@ -145,7 +145,7 @@ function Home() {
         <div className="modal">
           <div className="modal-content">
             <h2>
-              {monthNames[currentDate.getMonth()+1]} {selectedDay},{" "}
+              {monthNames[currentDate.getMonth()]} {selectedDay},{" "}
               {currentDate.getFullYear()}
             </h2>
             <p>{currEntry || "No description available."}</p>
