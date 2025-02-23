@@ -5,8 +5,16 @@ import right from "../assets/right.png";
 import sad from "../assets/sad.jpg";
 import happy from "../assets/happy.jpeg";
 import mid from "../assets/mid.jpg";
+import { getDiaryEntryForDate } from '../utils/api';
 
-const images = [sad, happy, mid];
+const mood_images = {
+  "Happy":happy,
+  "Sad":sad,
+  "Angry":mid,
+  "Excited":happy,
+  "Anxious":sad,
+  "Neutral":mid
+}
 
 const monthNames = [
   "January",
@@ -26,6 +34,7 @@ const monthNames = [
 function Home() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null); // Store selected day
+  const [currEntry, setCurrEntry] = useState(null); // Store selected day
   const [modalOpen, setModalOpen] = useState(false); // Manage modal visibility
 
   // Descriptions for each day (just an example, you can customize)
@@ -51,8 +60,10 @@ function Home() {
   const getDaysInMonth = (year, month) =>
     new Date(year, month + 1, 0).getDate();
 
-  const handleDayClick = (day) => {
+  const handleDayClick = (day, diary) => {
     setSelectedDay(day); // Set the selected day
+    console.log(day, diary);
+    setCurrEntry(diary);
     setModalOpen(true); // Open the modal
   };
 
@@ -69,13 +80,32 @@ function Home() {
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const randomImage = images[Math.floor(Math.random() * images.length)]; // Random image selection
+      let randomImage = mid; // Random image selection
+
+      let date_key = `${year}-${month}-${day}`;
+      if (month+1 < 10) {
+        if (day+1 <10) {
+          date_key = `${year}-0${month+1}-0${day}`;
+        }
+        date_key = `${year}-0${month+1}-${day}`;
+      }
+
+      console.log(date_key);
+      let entries = getDiaryEntryForDate(date_key);
+      let diary = null;
+      let disabled = true;
+      if (entries != null) {
+        disabled = false
+        randomImage = mood_images[entries?.mood] || mid;
+        diary = entries?.diary || null;
+      }
 
       days.push(
         <button
           key={day}
+          disabled={disabled}
           className="day"
-          onClick={() => handleDayClick(day)} // Make each day clickable
+          onClick={() => handleDayClick(day, diary)} // Make each day clickable
         >
           <img src={randomImage} alt={`Day ${day}`} className="day-image" />{" "}
           {/* Fix alt syntax */}
@@ -111,7 +141,7 @@ function Home() {
               {monthNames[currentDate.getMonth()]} {selectedDay},{" "}
               {currentDate.getFullYear()}
             </h2>
-            <p>{descriptions[selectedDay] || "No description available."}</p>
+            <p>{currEntry || "No description available."}</p>
             <button
               className="modal-button"
               onClick={() => setModalOpen(false)}

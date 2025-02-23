@@ -24,7 +24,7 @@ app.post("/chat", async (req, res) => {
     const { messages } = req.body;
 
     const requiredTopics = [
-      "weather", "mood", "sleep time", "physical health", "special events", 
+      "mood", "sleep time", "physical health", "special events", 
       "stress levels", "diet and exercise"
     ];
 

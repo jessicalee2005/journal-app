@@ -37,16 +37,37 @@ export const saveDiaryEntry = (date, diaryEntry) => {
 };
 
 // Fetch diary entry for a specific date from localStorage
+// export const getDiaryEntryForDate = (date) => {
+//   try {
+//     const entry = JSON.parse(localStorage.getItem(date) || '{}');
+//     return Object.keys(entry).length > 0 ? entry : null;
+//   } catch (error) {
+//     console.error("Error fetching diary entry for date:", error);
+//     return null;
+//   }
+// };
 export const getDiaryEntryForDate = (date) => {
   try {
-    const entry = JSON.parse(localStorage.getItem(date) || '{}');
-    return Object.keys(entry).length > 0 ? entry : null;
+    // Retrieve the entry for the given date from localStorage
+    const entry = localStorage.getItem(date);
+
+    // If the key doesn't exist or is empty, return null
+    if (!entry) {
+      console.log("No diary entry found for this date.");
+      return null;
+    }
+
+    // Parse the entry data
+    const parsedEntry = JSON.parse(entry);
+
+    // Return only the "diary" field, or null if it's not present
+    return parsedEntry;
+
   } catch (error) {
     console.error("Error fetching diary entry for date:", error);
     return null;
   }
 };
-
 // Fetch all diary entries from localStorage
 export const fetchDiaryEntries = () => {
   try {
