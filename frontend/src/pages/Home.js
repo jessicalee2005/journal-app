@@ -4,17 +4,21 @@ import left from "../assets/left.png";
 import right from "../assets/right.png";
 import sad from "../assets/sad.jpg";
 import happy from "../assets/happy.jpeg";
-import mid from "../assets/mid.jpg";
-import { getDiaryEntryForDate } from '../utils/api';
+import neutral from "../assets/neutral.jpg";
+import anxious from "../assets/anxious.png";
+import angry from "../assets/angry.jpg";
+import excited from "../assets/excited.jpg";
+import gray from "../assets/gray.jpeg";
+import { getDiaryEntryForDate } from "../utils/api";
 
 const mood_images = {
-  "Happy":happy,
-  "Sad":sad,
-  "Angry":mid,
-  "Excited":happy,
-  "Anxious":sad,
-  "Neutral":mid
-}
+  Happy: happy,
+  Sad: sad,
+  Angry: angry,
+  Excited: excited,
+  Anxious: anxious,
+  Neutral: neutral,
+};
 
 const monthNames = [
   "January",
@@ -80,14 +84,14 @@ function Home() {
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
-      let randomImage = mid; // Random image selection
+      let randomImage = gray; // Random image selection
 
       let date_key = `${year}-${month}-${day}`;
-      if (month+1 < 10) {
-        if (day+1 <10) {
-          date_key = `${year}-0${month+1}-0${day}`;
+      if (month + 1 < 10) {
+        if (day + 1 < 10) {
+          date_key = `${year}-0${month + 1}-0${day}`;
         }
-        date_key = `${year}-0${month+1}-${day}`;
+        date_key = `${year}-0${month + 1}-${day}`;
       }
 
       console.log(date_key);
@@ -95,8 +99,8 @@ function Home() {
       let diary = null;
       let disabled = true;
       if (entries != null) {
-        disabled = false
-        randomImage = mood_images[entries?.mood] || mid;
+        disabled = false;
+        randomImage = mood_images[entries?.mood] || gray;
         diary = entries?.diary || null;
       }
 
