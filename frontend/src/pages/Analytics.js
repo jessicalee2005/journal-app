@@ -89,7 +89,7 @@ const Analytics = () => {
 
         {/* Chart 2: Sleep Time Over Time */}
         <div className="chart-container">
-          <h2>Sleep Time Over Time</h2>
+          <h2 className="chart-title">Sleep Log</h2>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={sleepData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -104,7 +104,7 @@ const Analytics = () => {
 
         {/* Chart 3: Physical Health Over Time */}
         <div className="chart-container">
-          <h2>Physical Health Over Time</h2>
+          <h2 className="chart-title">Physical Health Log</h2>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={healthData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -119,7 +119,7 @@ const Analytics = () => {
 
         {/* Chart 4: Health Status Calendar */}
         <div className="calendar-container">
-          <h2>Health Status Calendar</h2>
+          <h2 className="chart-title">Health Status Calendar</h2>
           <Calendar tileClassName={({ date }) => renderHealthClass(date)} />
         </div>
       </div>
