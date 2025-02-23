@@ -1,5 +1,5 @@
 import axios from "axios";
-import {diaryEntries} from "./diaryEntries";
+import {diaryEntries} from "./diaryEntries"; // MANUALLY POPULATE DATA FOR DEMO
 
 // API base URL (adjust according to your setup)
 const API_URL = "http://localhost:4001";
@@ -49,44 +49,45 @@ export const analyzeSleepAndHealth = async (messages) => {
   }
 };
 
-// export const getDiaryEntryForDate = (date) => {
-//   try {
-//     // Retrieve the entry for the given date from localStorage
-//     const entry = localStorage.getItem(date);
+export const getDiaryEntryForDate = (date) => {
+  try {
+    // Retrieve the entry for the given date from localStorage
+    const entry = localStorage.getItem(date);
 
-//     // If the key doesn't exist or is empty, return null
-//     if (!entry) {
-//       console.log("No diary entry found for this date.");
-//       return null;
-//     }
+    // If the key doesn't exist or is empty, return null
+    if (!entry) {
+      console.log("No diary entry found for this date.");
+      return null;
+    }
 
-//     // Parse the entry data
-//     const parsedEntry = JSON.parse(entry);
+    // Parse the entry data
+    const parsedEntry = JSON.parse(entry);
 
-//     // Return only the "diary" field, or null if it's not present
-//     return parsedEntry;
+    // Return only the "diary" field, or null if it's not present
+    return parsedEntry;
 
-//   } catch (error) {
-//     console.error("Error fetching diary entry for date:", error);
-//     return null;
-//   }
-// };
+  } catch (error) {
+    console.error("Error fetching diary entry for date:", error);
+    return null;
+  }
+};
 // Fetch all diary entries from localStorage
-// export const fetchDiaryEntries = () => {
-//   try {
-//     const entries = {};
-//     for (let i = 0; i < localStorage.length; i++) {
-//       const key = localStorage.key(i);
-//       if (key.match(/^\d{4}-\d{2}-\d{2}$/)) { // Check if key is a date
-//         entries[key] = JSON.parse(localStorage.getItem(key));
-//       }
-//     }
-//     return entries;
-//   } catch (error) {
-//     console.error("Error fetching all diary entries:", error);
-//     return {};
-//   }
-// };
+export const fetchDiaryEntries = () => {
+  try {
+    const entries = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.match(/^\d{4}-\d{2}-\d{2}$/)) { // Check if key is a date
+        entries[key] = JSON.parse(localStorage.getItem(key));
+      }
+    }
+    return entries;
+  } catch (error) {
+    console.error("Error fetching all diary entries:", error);
+    return {};
+  }
+};
+
 
 export const transcribeAudio = async (audioUrl) => {
   try {
@@ -99,26 +100,26 @@ export const transcribeAudio = async (audioUrl) => {
 };
 
 
+// MANUALLY POPULATE DATA FOR DEMO
+// export const getDiaryEntryForDate = (date) => {
+//   try {
+//     const entry = diaryEntries[date];
+//     if (!entry) {
+//       console.log("No diary entry found for this date.");
+//       return null;
+//     }
+//     return entry;
+//   } catch (error) {
+//     console.error("Error fetching diary entry for date:", error);
+//     return null;
+//   }
+// };
 
-export const getDiaryEntryForDate = (date) => {
-  try {
-    const entry = diaryEntries[date];
-    if (!entry) {
-      console.log("No diary entry found for this date.");
-      return null;
-    }
-    return entry;
-  } catch (error) {
-    console.error("Error fetching diary entry for date:", error);
-    return null;
-  }
-};
-
-export const fetchDiaryEntries = () => {
-  try {
-    return diaryEntries;
-  } catch (error) {
-    console.error("Error fetching all diary entries:", error);
-    return {};
-  }
-};
+// export const fetchDiaryEntries = () => {
+//   try {
+//     return diaryEntries;
+//   } catch (error) {
+//     console.error("Error fetching all diary entries:", error);
+//     return {};
+//   }
+// };

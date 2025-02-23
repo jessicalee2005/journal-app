@@ -183,7 +183,7 @@ function AddEntry() {
             waitingForResponse
               ? "Thinking..."
               : started
-              ? conversation[conversation.length - 1].text.slice(4)
+              ? conversation[conversation.length - 1].text.replace(/^bot:\s*/, "")
               : "Press the mic to speak to me!"
           )
       ),
@@ -203,7 +203,7 @@ function AddEntry() {
           React.createElement(
             "button",
             { onClick: finishEntry, className: "finish-entry-button" },
-            "finish entry"
+            "Finish Entry"
           )
         )
     )
