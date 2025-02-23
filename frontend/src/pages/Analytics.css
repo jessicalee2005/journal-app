@@ -31,20 +31,20 @@
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
   font-family: Alata;
-  margin-left: px;
+  margin-left: 30px;
   margin-top: 50px;
 }
 
 .green {
-  background-color: green;
+  background-color: #689884;
 }
 
 .red {
-  background-color: red;
+  background-color: #d06c6c;
 }
 
 .yellow {
-  background-color: yellow;
+  background-color: #d8c7b9;
 }
 
 .gray {
@@ -56,4 +56,36 @@
   font-weight: 100;
   font-size: 18px;
   text-align: center;
+}
+
+/* Updated .calendar-container */
+.calendar-container {
+  width: 45%;
+  display: flex;
+  justify-content: center; /* Centers the content horizontally */
+  align-items: center; /* Centers the content vertically */
+  flex-direction: column; /* Ensures items inside are stacked vertically */
+  padding: 20px; /* Optional: You can add padding if needed */
+}
+
+/* You can keep the existing styles for the calendar-chart as it already has padding and looks fine */
+.calendar-chart {
+  padding: 10px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: none;
+  /* align-items: center; This line can be removed since flexbox will handle centering now */
+}
+
+/* Optional: If you want to ensure the calendar-container is a bit more flexible */
+.chart-container {
+  width: 45%;
+  height: 300px;
+  margin: 20px;
+  font-family: alata;
+  font-size: 12px;
+  font-weight: 100;
+  display: flex;
+  justify-content: center; /* Centers content horizontally */
+  align-items: center; /* Centers content vertically */
 }

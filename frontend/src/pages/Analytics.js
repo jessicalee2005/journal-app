@@ -16,8 +16,8 @@ import "./Analytics.css";
 // Sample data
 const entryData = [
   { time: "2025-02-01", mood: "high", sleepTime: 8, physicalHealth: "good" },
-  { time: "2025-02-02", mood: "low", sleepTime: 6, physicalHealth: "bad" },
-  { time: "2025-02-03", mood: "mid", sleepTime: 7, physicalHealth: "mid" },
+  { time: "2025-02-02", mood: "low", sleepTime: 6, physicalHealth: "mid" },
+  { time: "2025-02-03", mood: "mid", sleepTime: 7, physicalHealth: "bad" },
 ];
 
 const Analytics = () => {
@@ -62,7 +62,6 @@ const Analytics = () => {
       if (entry.healthStatus === "mid") return "yellow";
     }
 
-    // Default fallback
     return "gray";
   };
 
@@ -104,7 +103,7 @@ const Analytics = () => {
 
         {/* Chart 3: Physical Health Over Time */}
         <div className="chart-container">
-          <h2 className="chart-title">Physical Health Log</h2>
+          <h2 className="chart-title">Physical Log</h2>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={healthData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -120,7 +119,9 @@ const Analytics = () => {
         {/* Chart 4: Health Status Calendar */}
         <div className="calendar-container">
           <h2 className="chart-title">Health Status Calendar</h2>
-          <Calendar tileClassName={({ date }) => renderHealthClass(date)} />
+          <div className="calendar-chart">
+            <Calendar tileClassName={({ date }) => renderHealthClass(date)} />
+          </div>
         </div>
       </div>
     </div>

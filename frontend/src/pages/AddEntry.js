@@ -3,8 +3,13 @@ import React from "react";
 import "./AddEntry.css";
 import mic from "../assets/mic.png";
 import chicken from "../assets/chicken.png";
-import { sendMessageToChatbot, analyzeMood, saveDiaryEntry, getDiaryEntryForDate, transcribeAudio } from '../utils/api';
-
+import {
+  sendMessageToChatbot,
+  analyzeMood,
+  saveDiaryEntry,
+  getDiaryEntryForDate,
+  transcribeAudio,
+} from "../utils/api";
 
 function AddEntry() {
   const [isRecording, setIsRecording] = useState(false);
@@ -27,7 +32,7 @@ function AddEntry() {
   }, []);
 
   const getTodayKey = () => {
-    return new Date().toISOString().split('T')[0];
+    return new Date().toISOString().split("T")[0];
   };
 
   const startRecording = async () => {
@@ -46,7 +51,8 @@ function AddEntry() {
 
     const animate = () => {
       analyser.getByteFrequencyData(dataArray);
-      const average = dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
+      const average =
+        dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
       setVolume(average);
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -68,10 +74,16 @@ function AddEntry() {
 
     // Upload audio and transcribe with AssemblyAI
     const userText = await convertAudioToText(audioBlob);
-    const updatedConversation = [...conversation, { sender: "user", text: userText }];
+    const updatedConversation = [
+      ...conversation,
+      { sender: "user", text: userText },
+    ];
     const chatResponse = await sendMessageToChatbot(updatedConversation);
     console.log(chatResponse);
-    const newConversation = [...updatedConversation, { sender: "bot", text: chatResponse }];
+    const newConversation = [
+      ...updatedConversation,
+      { sender: "bot", text: chatResponse },
+    ];
     setConversation(newConversation);
     audioChunksRef.current = [];
   };
@@ -86,12 +98,18 @@ function AddEntry() {
   const finishEntry = async () => {
     const diaryText = await sendMessageToChatbot([
       ...conversation,
-      { sender: "user", text: "Please generate a diary entry based on our conversation" }
+      {
+        sender: "user",
+        text: "Please generate a diary entry based on our conversation",
+      },
     ]);
-    const mood = await analyzeMood(conversation.map(m => m.text).join("\n"));
+    const mood = await analyzeMood(conversation.map((m) => m.text).join("\n"));
     const analysisText = await sendMessageToChatbot([
       ...conversation,
-      { sender: "user", text: "Extract sleep time and physical health information from our conversation" }
+      {
+        sender: "user",
+        text: "Extract sleep time and physical health information from our conversation",
+      },
     ]);
     const { sleepTime, physicalHealth } = parseAnalysis(analysisText);
 
@@ -100,7 +118,7 @@ function AddEntry() {
       diary: diaryText,
       mood,
       sleepTime,
-      physicalHealth
+      physicalHealth,
     };
     console.log(entryData);
 
@@ -118,7 +136,7 @@ function AddEntry() {
       body: formData,
     });
     const { audioUrl } = await uploadResponse.json();
-    console.log(audioUrl); 
+    console.log(audioUrl);
 
     // Transcribe using AssemblyAI
     const transcribedText = await transcribeAudio(audioUrl);
@@ -131,206 +149,54 @@ function AddEntry() {
     const healthMatch = text.match(/physical health:?\s*([^\n]+)/i);
     return {
       sleepTime: sleepMatch ? parseFloat(sleepMatch[1]) : null,
-      physicalHealth: healthMatch ? healthMatch[1].trim() : null
+      physicalHealth: healthMatch ? healthMatch[1].trim() : null,
     };
   };
 
   return React.createElement(
     "div",
-    { className: "add-entry" },
+    { className: "page-container" },
     React.createElement(
       "div",
-      { className: "chicken-container" },
-      React.createElement("img", {
-        src: chicken,
-        alt: "Chicken",
-        className: "chicken-image"
-      }),
-      audioUrl && React.createElement(
+      { className: "add-entry" },
+      React.createElement(
         "div",
-        { className: "text-output-box" },
-        conversation.length > 0 
-          ? conversation[conversation.length - 1].text 
-          : "Start recording to see your conversation"
-      )
-    ),
-    React.createElement(
-      "button",
-      {
-        className: `mic-button ${isRecording ? "recording" : ""}`,
-        style: { transform: `scale(${1 + volume / 200})` },
-        onClick: isRecording ? stopRecording : startRecording
-      },
-      React.createElement("img", { src: mic, alt: "Microphone" })
-    ),
-    conversation.length > 0 && React.createElement(
-      "button",
-      { onClick: finishEntry },
-      "Finish Entry"
+        { className: "chicken-container" },
+        React.createElement("img", {
+          src: chicken,
+          alt: "Chicken",
+          className: "chicken-image",
+        }),
+        audioUrl &&
+          React.createElement(
+            "div",
+            { className: "text-output-box" },
+            conversation.length > 0
+              ? conversation[conversation.length - 1].text
+              : "thinking..."
+          )
+      ),
+      React.createElement(
+        "button",
+        {
+          className: `mic-button ${isRecording ? "recording" : ""}`,
+          style: { transform: `scale(${1 + volume / 200})` },
+          onClick: isRecording ? stopRecording : startRecording,
+        },
+        React.createElement("img", { src: mic, alt: "Microphone" })
+      ),
+      conversation.length > 0 &&
+        React.createElement(
+          "div",
+          { className: "finish-entry-container" },
+          React.createElement(
+            "button",
+            { onClick: finishEntry, className: "finish-entry-button" },
+            "finish entry"
+          )
+        )
     )
   );
 }
 
 export default AddEntry;
-
-// function AddEntry() {
-//   const [isRecording, setIsRecording] = useState(false);
-//   const [audioUrl, setAudioUrl] = useState(null);
-//   const [conversation, setConversation] = useState([]);
-//   const mediaRecorderRef = useRef(null);
-//   const audioChunksRef = useRef([]);
-//   const animationRef = useRef(null);
-//   const [volume, setVolume] = useState(0);
-
-//   useEffect(() => {
-//     // Load existing conversation for today on mount
-//     const today = getTodayKey();
-//     const existingEntry = getDiaryEntryForDate(today);
-//     if (existingEntry && existingEntry.conversation) {
-//       setConversation(existingEntry.conversation);
-//     }
-
-//     return () => {
-//       if (animationRef.current) cancelAnimationFrame(animationRef.current);
-//     };
-//   }, []);
-
-//   const getTodayKey = () => {
-//     return new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-//   };
-
-//   const startRecording = async () => {
-//     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-//     const mediaRecorder = new MediaRecorder(stream);
-//     mediaRecorderRef.current = mediaRecorder;
-
-//     const audioContext = new AudioContext();
-//     const source = audioContext.createMediaStreamSource(stream);
-//     const analyser = audioContext.createAnalyser();
-//     source.connect(analyser);
-//     analyser.fftSize = 256;
-
-//     const bufferLength = analyser.frequencyBinCount;
-//     const dataArray = new Uint8Array(bufferLength);
-
-//     const animate = () => {
-//       analyser.getByteFrequencyData(dataArray);
-//       const average = dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
-//       setVolume(average);
-//       animationRef.current = requestAnimationFrame(animate);
-//     };
-//     animate();
-
-//     mediaRecorder.ondataavailable = (event) => {
-//       audioChunksRef.current.push(event.data);
-//     };
-
-//     mediaRecorder.onstop = handleRecordingStop;
-
-//     mediaRecorder.start();
-//     setIsRecording(true);
-//   };
-
-//   const handleRecordingStop = async () => {
-//     const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-//     const url = URL.createObjectURL(audioBlob);
-//     setAudioUrl(url);
-
-//     const userText = await convertAudioToText(audioBlob);
-//     const updatedConversation = [...conversation, { sender: "user", text: userText }];
-
-//     const chatResponse = await sendMessageToChatbot(updatedConversation);
-//     const newConversation = [...updatedConversation, { sender: "bot", text: chatResponse }];
-//     setConversation(newConversation);
-//     audioChunksRef.current = [];
-//   };
-
-//   const stopRecording = () => {
-//     mediaRecorderRef.current.stop();
-//     setIsRecording(false);
-//     cancelAnimationFrame(animationRef.current);
-//     setVolume(0);
-//   };
-
-//   const finishEntry = async () => {
-//     // Generate diary
-//     const diaryText = await sendMessageToChatbot([
-//       ...conversation,
-//       { sender: "user", text: "Please generate a diary entry based on our conversation" }
-//     ]);
-
-//     // Analyze mood
-//     const mood = await analyzeMood(conversation.map(m => m.text).join("\n"));
-
-//     // Extract sleep time and physical health
-//     const analysisText = await sendMessageToChatbot([
-//       ...conversation,
-//       { sender: "user", text: "Extract sleep time and physical health information from our conversation" }
-//     ]);
-//     const { sleepTime, physicalHealth } = parseAnalysis(analysisText);
-
-//     const entryData = {
-//       conversation,
-//       diary: diaryText,
-//       mood,
-//       sleepTime,
-//       physicalHealth
-//     };
-
-//     saveDiaryEntry(getTodayKey(), entryData);
-//     setConversation([]);
-//     setAudioUrl(null);
-//   };
-
-//   const convertAudioToText = async (audioBlob) => {
-//     // Placeholder - implement with your speech-to-text API
-//     return "User audio input"; // Replace with actual speech-to-text implementation
-//   };
-
-//   const parseAnalysis = (text) => {
-//     const sleepMatch = text.match(/sleep time:?\s*(\d+\.?\d*)/i);
-//     const healthMatch = text.match(/physical health:?\s*([^\n]+)/i);
-    
-//     return {
-//       sleepTime: sleepMatch ? parseFloat(sleepMatch[1]) : null,
-//       physicalHealth: healthMatch ? healthMatch[1].trim() : null
-//     };
-//   };
-
-//   return React.createElement(
-//     "div",
-//     { className: "add-entry" },
-//     React.createElement(
-//       "div",
-//       { className: "chicken-container" },
-//       React.createElement("img", {
-//         src: chicken,
-//         alt: "Chicken",
-//         className: "chicken-image"
-//       }),
-//       audioUrl && React.createElement(
-//         "div",
-//         { className: "text-output-box" },
-//         conversation.length > 0 
-//           ? conversation[conversation.length - 1].text 
-//           : "Start recording to see your conversation"
-//       )
-//     ),
-//     React.createElement(
-//       "button",
-//       {
-//         className: `mic-button ${isRecording ? "recording" : ""}`,
-//         style: { transform: `scale(${1 + volume / 200})` },
-//         onClick: isRecording ? stopRecording : startRecording
-//       },
-//       React.createElement("img", { src: mic, alt: "Microphone" })
-//     ),
-//     conversation.length > 0 && React.createElement(
-//       "button",
-//       { onClick: finishEntry },
-//       "Finish Entry"
-//     )
-//   );
-// }
-
-// export default AddEntry;

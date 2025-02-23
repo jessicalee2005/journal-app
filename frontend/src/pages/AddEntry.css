@@ -1,30 +1,41 @@
+.page-container {
+  margin: 60px;
+}
+
 .add-entry {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 100vh;
+  justify-content: flex-end; /* Align everything to the right */
+  align-items: flex-end; /* Position items at the bottom */
+  height: 15vh;
   padding: 20px;
+  position: relative;
 }
 
 .chicken-container {
   display: flex;
   align-items: center;
   gap: 10px;
+  position: absolute;
+  top: 50px;
+  left: 30px; /* Position it towards the left */
 }
 
 .chicken-image {
-  width: 300px;
+  width: 400px;
   height: auto;
+  margin: 0;
 }
 
 .text-output-box {
-  padding: 10px;
+  padding: 15px;
+  font-family: alata;
   font-size: 16px;
   border-radius: 5px;
-  border: 1px solid #ccc;
-  width: 200px;
-  background-color: #f0f0f0;
-  margin-left: -60px;
+  border: none;
+  width: 400px;
+  background-color: #e5dfda;
+  margin-left: -50px;
+  text-align: left;
 }
 
 .mic-button {
@@ -39,7 +50,13 @@
   justify-content: center;
   align-items: center;
   transition: transform 0.1s ease;
-  margin-right: 60px;
+  position: absolute;
+  top: 220px;
+  right: 100px;
+}
+
+.mic-button:hover {
+  background-color: #204937;
 }
 
 .mic-button.recording {
@@ -65,4 +82,34 @@ audio {
   font-size: 28px;
   font-weight: 100;
   color: #333;
+}
+
+.finish-entry-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  font-family: alata;
+  height: 100vh; /* Ensure it takes up the full viewport height */
+  position: absolute; /* Position it at the center */
+  top: 280%; /* Move it to the middle of the screen vertically */
+  left: 50%; /* Move it to the middle of the screen horizontally */
+  transform: translate(-50%, -50%); /* Adjust to exactly center the button */
+  padding: 20px 50px;
+}
+
+.finish-entry-button {
+  background-color: #467e65;
+  color: white;
+  font-size: 18px;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  align-items: center;
+  transition: background-color 0.3s;
+}
+
+.finish-entry-button:hover {
+  background-color: #204937;
 }
