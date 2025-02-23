@@ -19,6 +19,8 @@ function AddEntry() {
   const audioChunksRef = useRef([]);
   const animationRef = useRef(null);
   const [volume, setVolume] = useState(0);
+  const [waitingForResponse, setWaitingForResponse] = useState(false);
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
     const today = getTodayKey();
@@ -26,6 +28,7 @@ function AddEntry() {
     if (existingEntry && existingEntry.conversation) {
       setConversation(existingEntry.conversation);
     }
+    setStarted(false);
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
@@ -71,6 +74,8 @@ function AddEntry() {
     const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
     const url = URL.createObjectURL(audioBlob);
     setAudioUrl(url);
+    setWaitingForResponse(true);
+
 
     // Upload audio and transcribe with AssemblyAI
     const userText = await convertAudioToText(audioBlob);
@@ -79,11 +84,13 @@ function AddEntry() {
       { sender: "user", text: userText },
     ];
     const chatResponse = await sendMessageToChatbot(updatedConversation);
+    setStarted(true);
     console.log(chatResponse);
     const newConversation = [
       ...updatedConversation,
       { sender: "bot", text: chatResponse },
     ];
+    setWaitingForResponse(false);
     setConversation(newConversation);
     audioChunksRef.current = [];
   };
@@ -167,13 +174,15 @@ function AddEntry() {
           alt: "Chicken",
           className: "chicken-image",
         }),
-        audioUrl &&
+        
           React.createElement(
             "div",
             { className: "text-output-box" },
-            conversation.length > 0
-              ? conversation[conversation.length - 1].text
-              : "thinking..."
+            waitingForResponse
+              ? "Thinking..."
+              : started
+              ? conversation[conversation.length - 1].text.slice(5)
+              : "Press the mic to speak to me!"
           )
       ),
       React.createElement(
@@ -185,7 +194,7 @@ function AddEntry() {
         },
         React.createElement("img", { src: mic, alt: "Microphone" })
       ),
-      conversation.length > 0 &&
+      started &&
         React.createElement(
           "div",
           { className: "finish-entry-container" },
